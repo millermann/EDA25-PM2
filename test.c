@@ -37,12 +37,17 @@ int lectura_operaciones(LIBT *listaLI, ABB *arbolBB)
                 else
                 {
                     bajaLIBT(x, listaLI, &exito);
+                    bajaABB(x, arbolBB, &exito);
                 }
             }
             else if (cod_operador == 3)
             {
-                mostrarDatos(*evocarLIBT(x.codigo, listaLI, &exito));
-                mostrarDatos(*evocarABB(x.codigo, arbolBB, &exito));            
+                evocarLIBT(x.codigo, listaLI, &exito);
+                if(exito == 0) printf("\n no se encontro en LIBT");
+                evocarABB(x.codigo, arbolBB, &exito);
+                if(exito == 0) printf("\n no se encontro en ABB");
+                //mostrarDatos(*evocarLIBT(x.codigo, listaLI, &exito));
+                //mostrarDatos(*evocarABB(x.codigo, arbolBB, &exito));            
                 // evocarLSO(x.codigo, listaLSO);
             }
             else

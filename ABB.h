@@ -37,13 +37,13 @@ void localizarABB(char id[], ABB arbol, nodo **anterior, nodo **cur, int *exito)
     *exito = 0;
     while (*cur != NULL)
     {
-        comparar = strcmp((**cur).vipd.codigo, id);
+        comparar = strcmp(id, (**cur).vipd.codigo);
         if (comparar == 0)
         {
             *exito = 1;
             break;
         }
-   
+
         *anterior = *cur;
         if (comparar < 0)
             *cur = (**cur).hi;
@@ -78,7 +78,7 @@ void altaABB(alumno x, ABB *arbol, int *exito) // -1 = No espacio, 0 = Repetido,
             }
             else
             {
-                if (strcmp(anterior->vipd.codigo, x.codigo) < 0)
+                if (strcmp(x.codigo, anterior->vipd.codigo) < 0)
                     anterior->hi = nuevo_nodo;
                 else
                     anterior->hd = nuevo_nodo;
@@ -94,16 +94,67 @@ void bajaABB(alumno x, ABB *arbol, int *exito)
 {
     nodo *anterior = NULL, *cur = NULL;
     localizarABB(x.codigo, *arbol, &anterior, &cur, exito);
+
     if (*exito == 1)
     {
-        // control de que todos los campos son iguales x = cur
+        if (cur->hi == NULL || cur->hd == NULL)
+        {
+            if (cur->hi == NULL && cur->hd == NULL) // A - x tiene 0 hijos
+            {
+                if (cur == arbol->raiz) // A1
+                    arbol->raiz = NULL;
+                else
+                {
+                    if (anterior->hi == cur) // A2
+                        anterior->hi = NULL;
+                    else 
+                        anterior->hd = NULL;
+                }
+            }
+            else // B - x tiene 1 hijo
+            {
+                nodo *aux;
+                if (cur->hi != NULL)
+                    aux = cur->hi;
+                else
+                    aux = cur->hd;
 
-        if (anterior->hi == cur)
-            anterior->hi = NULL;
-        else
-            anterior->hd = NULL;
-        free((void *)cur);
+                if (cur == arbol->raiz) // B1
+                    arbol->raiz = aux;
+                else
+                {
+                    if (anterior->hi == cur) // B2
+                        anterior->hi = aux;
+                    else // B3
+                        anterior->hd = aux;
+                }
+            }
+            free(cur);
+        }
+        else // x tiene 2 hijos
+        {
+            nodo *anterior_aux = cur;
+            nodo *aux = cur->hi;
+
+            while (aux->hd != NULL)
+            {
+                anterior_aux = aux;
+                aux = aux->hd;
+            }
+
+            cur->vipd = aux->vipd;
+
+            if (anterior_aux->hd == aux)
+                anterior_aux->hd = aux->hi;
+            else
+                anterior_aux->hi = aux->hi;
+
+            free(aux);
+        }
+        *exito = 1;
     }
+    else
+        *exito = -1;
 }
 
 alumno *evocarABB(char codigo[], ABB *arbol, int *exito)
@@ -112,6 +163,7 @@ alumno *evocarABB(char codigo[], ABB *arbol, int *exito)
     localizarABB(codigo, *arbol, &anterior, &cur, exito);
 
     if (*exito == 1)
+
         return &(*cur).vipd;
     else
         return NULL;

@@ -109,6 +109,7 @@ alumno *evocarLIBT(char codigo[], LIBT *listaLI, int *exito)
 {
     int pos;
     localizarLIBT(codigo, *listaLI, &pos, exito);
+    
     if (*exito)
         return &listaLI->lista[pos];
     else
