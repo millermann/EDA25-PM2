@@ -107,7 +107,7 @@ void bajaABB(alumno x, ABB *arbol, int *exito)
                 {
                     if (anterior->hi == cur) // A2
                         anterior->hi = NULL;
-                    else 
+                    else
                         anterior->hd = NULL;
                 }
             }
@@ -169,13 +169,14 @@ alumno *evocarABB(char codigo[], ABB *arbol, int *exito)
         return NULL;
 }
 
-void barridoPreOrdenABB(nodo *cur)
+void barridoPreOrdenABB(nodo *cur, int *n)
 {
     if (cur != NULL)
     {
         mostrarDatos(cur->vipd);
-        barridoPreOrdenABB(cur->hi);
-        barridoPreOrdenABB(cur->hd);
+        (*n)++;
+        barridoPreOrdenABB(cur->hi, n);
+        barridoPreOrdenABB(cur->hd, n);
     }
 }
 

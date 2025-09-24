@@ -32,7 +32,7 @@ int isEmptyLIBT(LIBT listaLI)
     return (listaLI.ls == -1);
 }
 
-void localizarLIBT(char id[], LIBT listaLI, int *pos, int *exito) // 1 = Exito, 0 = No encontrado
+void localizarLI(char id[], LIBT listaLI, int *pos, int *exito) // 1 = Exito, 0 = No encontrado
 {
     int comparar = -1, cur = listaLI.li;
 
@@ -44,8 +44,33 @@ void localizarLIBT(char id[], LIBT listaLI, int *pos, int *exito) // 1 = Exito, 
     *exito = (comparar == 0);
 }
 
-void localizarTrisecc(char id[], LIBT listaLI, int *pos, int *exito)
+void localizarTrisecc(char id[], LIBT listaLI, int *pos, int *exito) / 1 = Exito, 0 = No encontrado
 {
+    int li = listaLI.li, ls = listaLI.ls, mitad = 0, comparar = -1;
+    *exito = 0;
+
+    while (li <= ls)
+    {
+        mitad = (li + ls) / 2;
+
+        comparar = strcmp(id, listaLI.lista[mitad].codigo);
+
+        if (comparar == 0)
+        {
+            *exito = 1;
+            break;
+        }
+
+        if (comparar < 0)
+            ls = mitad - 1; 
+        else
+            li = mitad + 1;
+    }
+
+    if (*exito)
+        *pos = mitad;
+    else
+        *pos = li;
 }
 
 void altaLIBT(alumno x, LIBT *listaLI, int *exito)
@@ -61,7 +86,7 @@ void altaLIBT(alumno x, LIBT *listaLI, int *exito)
     else
     {
         int pos;
-        localizarLIBT(x.codigo, *listaLI, &pos, exito);
+        localizarTrisecc(x.codigo, *listaLI, &pos, exito);
 
         if (*exito)
             *exito = 0;
@@ -89,7 +114,7 @@ void altaLIBT(alumno x, LIBT *listaLI, int *exito)
 void bajaLIBT(alumno x, LIBT *listaLI, int *exito)
 {
     int pos = 0;
-    localizarLIBT(x.codigo, *listaLI, &pos, exito);
+    localizarTrisecc(x.codigo, *listaLI, &pos, exito);
     if (*exito == 1)
     {
         int aux = pos;
@@ -108,8 +133,8 @@ void bajaLIBT(alumno x, LIBT *listaLI, int *exito)
 alumno *evocarLIBT(char codigo[], LIBT *listaLI, int *exito)
 {
     int pos;
-    localizarLIBT(codigo, *listaLI, &pos, exito);
-    
+    localizarTrisecc(codigo, *listaLI, &pos, exito);
+
     if (*exito)
         return &listaLI->lista[pos];
     else
@@ -131,11 +156,13 @@ void mostrarEstructuraLIBT(LIBT listaLI)
             printf("\n # # # #   M O S T R A R   A L U M N O S   # # # #\n");
             aux = 0;
         }
-            */
         aux++;
+        */
         mostrarDatos(listaLI.lista[cur]);
         cur++;
     }
+    printf("\n\n hay %d alumnos en LIBT", cur);
+    printf("\n\n hay %d alumnos en LIBT", listaLI.ls);
     printf("\n\n # No hay mas alumnos para mostrar...");
 }
 

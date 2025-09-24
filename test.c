@@ -5,7 +5,7 @@
 #include "LIBT.h"
 #include "alumno.h"
 
-#define nombreArchivo "test.txt"
+#define nombreArchivo "Operaciones-Alumnos.txt"
 
 int lectura_operaciones(LIBT *listaLI, ABB *arbolBB)
 {
@@ -43,12 +43,14 @@ int lectura_operaciones(LIBT *listaLI, ABB *arbolBB)
             else if (cod_operador == 3)
             {
                 evocarLIBT(x.codigo, listaLI, &exito);
-                if(exito == 0) printf("\n no se encontro en LIBT");
+                if (exito == 0)
+                    printf("\n no se encontro en LIBT");
                 evocarABB(x.codigo, arbolBB, &exito);
-                if(exito == 0) printf("\n no se encontro en ABB");
-                //mostrarDatos(*evocarLIBT(x.codigo, listaLI, &exito));
-                //mostrarDatos(*evocarABB(x.codigo, arbolBB, &exito));            
-                // evocarLSO(x.codigo, listaLSO);
+                if (exito == 0)
+                    printf("\n no se encontro en ABB");
+                // mostrarDatos(*evocarLIBT(x.codigo, listaLI, &exito));
+                // mostrarDatos(*evocarABB(x.codigo, arbolBB, &exito));
+                //  evocarLSO(x.codigo, listaLSO);
             }
             else
             {
@@ -70,7 +72,8 @@ int main()
     initLIBT(&listaLI_usada);
     lectura_operaciones(&listaLI_usada, &arbol_usado);
     printf("\n\n####################################################### Arboles");
-    barridoPreOrdenABB(peekRaizABB(arbol_usado));
+    barridoPreOrdenABB(peekRaizABB(arbol_usado), &aux);
+    printf("\n\n hay %d alumnos en ABB", aux);
     printf("\n\n####################################################### LIBT");
     mostrarEstructuraLIBT(listaLI_usada);
 
