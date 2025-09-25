@@ -15,6 +15,17 @@ typedef struct
     char condicion[cond_size];
 } alumno;
 
+int mismoAlumno(alumno a, alumno b) // 0 - Distintos  1 - Iguales
+{
+    return 
+    (
+        strcmp(a.nombreCompleto, b.nombreCompleto) == 0 &&
+        strcmp(a.mail, b.mail) == 0 &&
+        a.nota == b.nota &&
+        strcmp(a.condicion, b.condicion) == 0
+    );
+}
+
 void mostrarDatos(alumno x)
 {
     printf("\n    ###################################");

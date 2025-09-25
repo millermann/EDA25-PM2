@@ -44,7 +44,7 @@ void localizarLI(char id[], LIBT listaLI, int *pos, int *exito) // 1 = Exito, 0 
     *exito = (comparar == 0);
 }
 
-void localizarTrisecc(char id[], LIBT listaLI, int *pos, int *exito) / 1 = Exito, 0 = No encontrado
+void localizarTrisecc(char id[], LIBT listaLI, int *pos, int *exito) // 1 = Exito, 0 = No encontrado
 {
     int li = listaLI.li, ls = listaLI.ls, mitad = 0, comparar = -1;
     *exito = 0;
@@ -62,7 +62,7 @@ void localizarTrisecc(char id[], LIBT listaLI, int *pos, int *exito) / 1 = Exito
         }
 
         if (comparar < 0)
-            ls = mitad - 1; 
+            ls = mitad - 1;
         else
             li = mitad + 1;
     }
@@ -111,20 +111,24 @@ void altaLIBT(alumno x, LIBT *listaLI, int *exito)
     }
 }
 
-void bajaLIBT(alumno x, LIBT *listaLI, int *exito)
+void bajaLIBT(alumno x, LIBT *listaLI, int *exito) // -1 = No encontrado, 0 = La nupla no era igual, 1 = Exito
 {
     int pos = 0;
     localizarTrisecc(x.codigo, *listaLI, &pos, exito);
     if (*exito == 1)
     {
-        int aux = pos;
-        while (aux < listaLI->ls)
+        if (mismoAlumno(x, listaLI->lista[pos]))
         {
-            listaLI->lista[aux] = listaLI->lista[aux + 1];
-            aux++;
+            int aux = pos;
+            while (aux < listaLI->ls)
+            {
+                listaLI->lista[aux] = listaLI->lista[aux + 1];
+                aux++;
+            }
+            listaLI->ls--;
+            *exito = 1;
         }
-        listaLI->ls--;
-        *exito = 1;
+        else *exito = 0;
     }
     else
         *exito = -1;
@@ -162,7 +166,6 @@ void mostrarEstructuraLIBT(LIBT listaLI)
         cur++;
     }
     printf("\n\n hay %d alumnos en LIBT", cur);
-    printf("\n\n hay %d alumnos en LIBT", listaLI.ls);
     printf("\n\n # No hay mas alumnos para mostrar...");
 }
 

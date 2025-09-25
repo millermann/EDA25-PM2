@@ -3,20 +3,9 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
 #include "alumno.h"
 
 #define max_LSO_size 130
-
-void strAMayus(char *str)
-{
-    int i = 0;
-    while (str[i] != '\0')
-    {
-        str[i] = toupper((unsigned char)str[i]);
-        i++;
-    }
-}
 
 typedef struct // LSO con tamaño conocido
 {
@@ -39,7 +28,7 @@ int isFull(LSO lista)
         return 0;
 }
 
-int isEmpty(LSO lista)
+int isEmptyLSO(LSO lista)
 {
     if (lista.ultimoElem == -1)
         return 1;
@@ -70,15 +59,14 @@ void resetCur(LSO *lista)
     lista->cur = 0;
 }
 
-int localizar(char id[], LSO *lista, int *pos, int *exito) // 1 = Exito, 0 = No encontrado
+void localizar(char id[], LSO *lista, int *pos, int *exito) // 1 = Exito, 0 = No encontrado
 {
-    int comparar = -1, consultas = 0;
+    int comparar = -1;
 
     lista->cur = 0;
     while (!isOos(*lista) && (comparar = strcmp(peek(*lista).codigo, id)) < 0)
     {
         lista->cur++; // deja el cur justo en la celda del 1er elem (>=) a x que encuentra
-        consultas++;
     }
 
     if (comparar == 0)
@@ -87,14 +75,13 @@ int localizar(char id[], LSO *lista, int *pos, int *exito) // 1 = Exito, 0 = No 
         *exito = 0;
 
     *pos = lista->cur;
-    return consultas;
 }
 
 void altaLSO(alumno x, LSO *lista, int *exito) // -1 = No espacio, 0 = Repetido, 1 = Exito
 {
     int cambios = 0;
     int pos;
-    if (isEmpty(*lista))
+    if (isEmptyLSO(*lista))
     {
         lista->cur = 0;
         lista->vipd[0] = x;
@@ -102,7 +89,7 @@ void altaLSO(alumno x, LSO *lista, int *exito) // -1 = No espacio, 0 = Repetido,
         *exito = 1;
     }
 
-    else    
+    else
     {
         localizar(x.codigo, lista, &pos, exito);
         if (*exito == 1)
@@ -132,38 +119,26 @@ void altaLSO(alumno x, LSO *lista, int *exito) // -1 = No espacio, 0 = Repetido,
     }
 }
 
-void bajaLSO(char codigo[], LSO *lista, int *exito) // -1 = No encontrado, 0 = No confirmado, 1 = Exito
+void bajaLSO(alumno x, LSO *lista, int *exito) // -1 = No encontrado, 0 = Nupla distinta, 1 = Exito
 {
-    int borrar, check_resp = 0, pos, cambios = 0;
+    int pos;
 
-    localizar(codigo, lista, &pos, exito);
+    localizar(x.codigo, lista, &pos, exito);
     if (*exito == 1)
     {
-        /*
-        mostrarDatos(peek(*lista));
-        printf("\n\n - Seguro desea dar de baja al alumno (1 = Si / 0 = No)");
-        printf("\n + Resp: ");
-        check_resp = scanf("%d", &borrar);
-        while (borrar > 1 || borrar < 0 || check_resp != 1)
+        if (mismoAlumno(x, lista->vipd[pos]))
         {
-            printf("\n\a # Respuesta invalida...");
-            printf("\n\n + Resp: ");
-            fflush(stdin);
-            check_resp = scanf("%d", &borrar);
-        }
-
-        *exito = borrar;
-        if (borrar == 1)
-        {*/
             int aux = pos;
             while (aux < lista->ultimoElem)
             {
                 lista->vipd[aux] = lista->vipd[aux + 1];
                 aux++;
-                cambios++;
             }
             lista->ultimoElem = (lista->ultimoElem) - 1;
-        /*}*/
+            *exito = 1;
+        }
+        else
+            *exito = 0;
     }
     else
         *exito = -1;
@@ -172,7 +147,7 @@ void bajaLSO(char codigo[], LSO *lista, int *exito) // -1 = No encontrado, 0 = N
 int pertenece(char codigo[], LSO *lista)
 {
     int exito = 0, pos;
-    if (!isEmpty(*lista))
+    if (!isEmptyLSO(*lista))
     {
         localizar(codigo, lista, &pos, &exito);
     }
@@ -264,60 +239,26 @@ void modificar(char codigo[], LSO *lista, int *exito) // -1 = No encontrado, 0 =
         *exito = -1;
 }
 
-int memorizar(char direccionArchivo[], LSO *lista, int info[])
+alumno *evocarLSO(char codigo[], LSO *lista, int *exito)
 {
-    FILE *archivo = fopen(direccionArchivo, "r");
+    int pos;
+    localizar(codigo, lista, &pos, exito);
 
-    if (archivo == NULL)
-        return 1;
-
-    else
-    {
-        int n = 0, repetidos = 0, exito;
-        alumno x;
-        char nombre[nomb_size], apellido[nomb_size];
-        while (!feof(archivo) && !isFull(*lista))
-        {
-            fscanf(archivo, "%[^\n] ", x.codigo);
-            strAMayus(x.codigo);
-            fscanf(archivo, "%[^,],%[^\n] ", apellido, nombre);
-            strcpy(x.nombreCompleto, strcat(apellido, nombre));
-            fscanf(archivo, "%[^\n] ", x.mail);
-            fscanf(archivo, "%d ", &x.nota);
-            fscanf(archivo, "%[^\n] ", x.condicion);
-
-            alta(x, lista, &exito);
-            if (exito == 0)
-                repetidos++;
-            else
-                n++;
-        }
-        info[0] = n, info[1] = repetidos;
-    }
-    fclose(archivo);
-    return 0;
-}
-
-alumno *evocarLSO(char codigo[], LSO *lista, int *consultas)
-{
-    consultas = 0;
-    int pos, exito;
-    consultas = localizar(codigo, lista, &pos, &exito);
-
-    if (exito == 1)
+    if (*exito == 1)
         return &lista->vipd[pos];
 
     else
         return NULL;
 }
 
-void mostrarEstructura(LSO *lista)
+void mostrarEstructuraLSO(LSO lista)
 {
     int aux = 0;
 
-    lista->cur = 0;
-    while (isOos(*lista) != 1)
+    lista.cur = 0;
+    while (isOos(lista) != 1)
     {
+        /*
         if (aux > 3)
         {
             printf("\n\n - Pulse para continuar...");
@@ -328,9 +269,11 @@ void mostrarEstructura(LSO *lista)
             aux = 0;
         }
         aux++;
-        mostrarDatos(peek(*lista));
-        lista->cur++;
+        */
+        mostrarDatos(peek(lista));
+        lista.cur++;
     }
+    printf("\n\n hay %d alumnos en LSO", lista.cur);
     printf("\n\n # No hay mas alumnos para mostrar...");
 }
 #endif // LSO_H_INCLUDED

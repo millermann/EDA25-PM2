@@ -90,68 +90,73 @@ void altaABB(alumno x, ABB *arbol, int *exito) // -1 = No espacio, 0 = Repetido,
     }
 }
 
-void bajaABB(alumno x, ABB *arbol, int *exito)
+void bajaABB(alumno x, ABB *arbol, int *exito) // -1 = No encontrado, 0 = La nupla no era igual, 1 = Exito
 {
     nodo *anterior = NULL, *cur = NULL;
     localizarABB(x.codigo, *arbol, &anterior, &cur, exito);
 
     if (*exito == 1)
     {
-        if (cur->hi == NULL || cur->hd == NULL)
+        if (mismoAlumno(x, cur->vipd))
         {
-            if (cur->hi == NULL && cur->hd == NULL) // A - x tiene 0 hijos
+            if (cur->hi == NULL || cur->hd == NULL)
             {
-                if (cur == arbol->raiz) // A1
-                    arbol->raiz = NULL;
-                else
+                if (cur->hi == NULL && cur->hd == NULL) // A - x tiene 0 hijos
                 {
-                    if (anterior->hi == cur) // A2
-                        anterior->hi = NULL;
+                    if (cur == arbol->raiz) // A1
+                        arbol->raiz = NULL;
                     else
-                        anterior->hd = NULL;
+                    {
+                        if (anterior->hi == cur) // A2
+                            anterior->hi = NULL;
+                        else
+                            anterior->hd = NULL;
+                    }
                 }
-            }
-            else // B - x tiene 1 hijo
-            {
-                nodo *aux;
-                if (cur->hi != NULL)
-                    aux = cur->hi;
-                else
-                    aux = cur->hd;
-
-                if (cur == arbol->raiz) // B1
-                    arbol->raiz = aux;
-                else
+                else // B - x tiene 1 hijo
                 {
-                    if (anterior->hi == cur) // B2
-                        anterior->hi = aux;
-                    else // B3
-                        anterior->hd = aux;
+                    nodo *aux;
+                    if (cur->hi != NULL)
+                        aux = cur->hi;
+                    else
+                        aux = cur->hd;
+
+                    if (cur == arbol->raiz) // B1
+                        arbol->raiz = aux;
+                    else
+                    {
+                        if (anterior->hi == cur) // B2
+                            anterior->hi = aux;
+                        else // B3
+                            anterior->hd = aux;
+                    }
                 }
+                free(cur);
             }
-            free(cur);
-        }
-        else // x tiene 2 hijos
-        {
-            nodo *anterior_aux = cur;
-            nodo *aux = cur->hi;
-
-            while (aux->hd != NULL)
+            else // x tiene 2 hijos
             {
-                anterior_aux = aux;
-                aux = aux->hd;
+                nodo *anterior_aux = cur;
+                nodo *aux = cur->hi;
+
+                while (aux->hd != NULL)
+                {
+                    anterior_aux = aux;
+                    aux = aux->hd;
+                }
+
+                cur->vipd = aux->vipd;
+
+                if (anterior_aux->hd == aux)
+                    anterior_aux->hd = aux->hi;
+                else
+                    anterior_aux->hi = aux->hi;
+
+                free(aux);
             }
-
-            cur->vipd = aux->vipd;
-
-            if (anterior_aux->hd == aux)
-                anterior_aux->hd = aux->hi;
-            else
-                anterior_aux->hi = aux->hi;
-
-            free(aux);
+            *exito = 1;
         }
-        *exito = 1;
+        else
+            *exito = 0;
     }
     else
         *exito = -1;
@@ -168,6 +173,23 @@ alumno *evocarABB(char codigo[], ABB *arbol, int *exito)
     else
         return NULL;
 }
+
+void barridoRestablecer(nodo *cur)
+{
+    if (cur != NULL)
+    {
+        barridoRestablecer(cur->hi);
+        barridoRestablecer(cur->hd);
+        free(cur);
+    }
+}
+
+void restablecerABB(ABB *arbol)
+{
+    barridoRestablecer(arbol->raiz);
+    arbol->raiz = NULL;
+}
+
 
 void barridoPreOrdenABB(nodo *cur, int *n)
 {
