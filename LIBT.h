@@ -18,7 +18,7 @@ typedef struct
 void initLIBT(LIBT *listaLI)
 {
     listaLI->lista = (alumno *)malloc(sizeof(alumno) * max_LIBT_size);
-    listaLI->li = -1; // al pedo
+    listaLI->li = -1;
     listaLI->ls = -1;
 }
 
@@ -143,6 +143,12 @@ alumno *evocarLIBT(char codigo[], LIBT *listaLI, int *exito)
         return &listaLI->lista[pos];
     else
         return NULL;
+}
+
+void restablecerLIBT(LIBT *listaLI)
+{
+    free(listaLI->lista);
+    initLIBT(listaLI);
 }
 
 void mostrarEstructuraLIBT(LIBT listaLI)

@@ -22,7 +22,7 @@ int main()
     initLIBT(&listaLI_usada);
     initABB(&arbol_usado);
 
-    lectura_operaciones(&listaLSO_usada, &listaLI_usada, &arbol_usado);
+    
 
     while (opcion != 0)
     {
@@ -48,6 +48,20 @@ int main()
         }
         switch (opcion)
         {
+        case 1:
+        {
+            system("cls");
+            printf("\n # # # #   C O M P A R A R   E S T R U C T U R A S   # # # #\n");
+            
+            initLSO(&listaLSO_usada);
+            restablecerABB(&arbol_usado);
+            restablecerLIBT(&listaLI_usada);
+            lectura_operaciones(&listaLSO_usada, &listaLI_usada, &arbol_usado);
+            printf("\n\n - Pulse para volver al menu...");
+            fflush(stdin);
+            getchar();
+            break;
+        }
         case 2:
         {
             system("cls");
