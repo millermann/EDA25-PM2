@@ -1,0 +1,21 @@
+# depslib dependency file v1.0
+1758597692 source:c:\users\maria\desktop\pm2\test.c
+	<stdio.h>
+	<stdlib.h>
+	"ABB.h"
+	"LIBT.h"
+	"alumno.h"
+
+1758599731 c:\users\maria\desktop\pm2\abb.h
+	<stdlib.h>
+	<string.h>
+	"alumno.h"
+
+1756780131 c:\users\maria\desktop\pm2\alumno.h
+
+1758597750 c:\users\maria\desktop\pm2\libt.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"alumno.h"
+

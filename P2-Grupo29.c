@@ -8,21 +8,40 @@
 #include "alumno.h"
 
 #define nombreArchivo "Operaciones-Alumnos.txt"
+/*
+Grupo 29
+Mariano Valentino Quiroga Puliti, Elias Ismael Videla
+
+  Rutina              |     LSO|    LIBT|     ABB
+ -------------------------------------------------
+  Max. Alta           |   91.00|   46.00|    0.50
+  Med. Alta           |   23.28|   12.01|    0.50
+  Max. Baja           |   91.00|   46.00|    1.00
+  Med. Baja           |   22.38|   11.69|    0.74
+  Max. Evoc. Ex.      |  100.00|    7.00|   12.00
+  Med. Evoc. Ex.      |   45.13|    5.53|    6.43
+  Max. Evoc. No Ex.   |   71.00|    7.00|   11.00
+  Med. Evoc. No Ex.   |   24.19|    5.13|    5.85
+
+Promediando todos los costos obtenidos, el ABB es, por una amplia diferencia, 
+la opcion mas eficiente respecto a los tipos de costo que evaluamos.
+La LIBT ocupa el 2do lugar (siendo mas efieciente que ABB en las evocaciones) 
+Por ultimo, la LSO es la que peor eficiencia posee de las 3.
+*/
+
 
 int strAMayus(char *str);
 int lectura_operaciones(LSO *listaLSO, LIBT *listaLI, ABB *arbolBB);
 
 int main()
 {
-    int opcion = -1, check_resp = 0, resp = 0, exito;
+    int opcion = -1, check_resp = 0;
     LSO listaLSO_usada;
     LIBT listaLI_usada;
     ABB arbol_usado;
     initLSO(&listaLSO_usada);
     initLIBT(&listaLI_usada);
     initABB(&arbol_usado);
-
-    
 
     while (opcion != 0)
     {
@@ -52,11 +71,17 @@ int main()
         {
             system("cls");
             printf("\n # # # #   C O M P A R A R   E S T R U C T U R A S   # # # #\n");
-            
+
             initLSO(&listaLSO_usada);
-            restablecerABB(&arbol_usado);
             restablecerLIBT(&listaLI_usada);
+            restablecerABB(&arbol_usado);
+            initCostoEstructura(&costoLSO);
+            initCostoEstructura(&costoLIBT);
+            initCostoEstructura(&costoABB);
+
             lectura_operaciones(&listaLSO_usada, &listaLI_usada, &arbol_usado);
+            
+            mostrarCostos(costoLSO, costoLIBT, costoABB);
             printf("\n\n - Pulse para volver al menu...");
             fflush(stdin);
             getchar();
@@ -98,8 +123,9 @@ int main()
             if (isEmptyLIBT(listaLI_usada))
                 printf("\n\a # No hay alumnos cargados en la base...");
             else
+            {
                 barridoPreOrdenABB(peekRaizABB(arbol_usado), &aux);
-
+            }
             printf("\n\n - Pulse para volver al menu...");
             fflush(stdin);
             getchar();
@@ -158,24 +184,9 @@ int lectura_operaciones(LSO *listaLSO, LIBT *listaLI, ABB *arbolBB)
             }
             else if (cod_operador == 3)
             {
-                printf("\n # %s", x.codigo);
                 evocarLSO(x.codigo, listaLSO, &exito);
-                if (exito == 0)
-                    printf("\n\t (F) no se encontro en LSO");
-                else
-                    printf("\n\t (E) se encontro en LSO");
-
                 evocarLIBT(x.codigo, listaLI, &exito);
-                if (exito == 0)
-                    printf("\n\t (F) no se encontro en LIBT");
-                else
-                    printf("\n\t (E) se encontro en LIBT");
-
                 evocarABB(x.codigo, arbolBB, &exito);
-                if (exito == 0)
-                    printf("\n\t (F) no se encontro en ABB");
-                else
-                    printf("\n\t (E) se encontro en ABB");
             }
             else
             {

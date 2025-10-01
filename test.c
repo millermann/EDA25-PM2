@@ -89,7 +89,7 @@ int lectura_operaciones(LSO *listaLSO, LIBT *listaLI, ABB *arbolBB)
 
 int main()
 {
-    int aux = 0;
+    int aux = 0, exito = 0, resultado= 0;
 
     LSO listaLSO_usada;
     LIBT listaLI_usada;
@@ -98,21 +98,16 @@ int main()
     initLIBT(&listaLI_usada);
     initABB(&arbol_usado);
 
+    initCostoEstructura(&costoLSO);
+    initCostoEstructura(&costoLIBT);
+    initCostoEstructura(&costoABB);
+
     lectura_operaciones(&listaLSO_usada, &listaLI_usada, &arbol_usado);
 
-    printf("\n\n####################################################### LSO");
-    mostrarEstructuraLSO(listaLSO_usada);
-
-    printf("\n\n####################################################### LIBT");
-    mostrarEstructuraLIBT(listaLI_usada);
-
-    restablecerABB(&arbol_usado);
-
-    printf("\n\n####################################################### Arboles");
-    barridoPreOrdenABB(peekRaizABB(arbol_usado), &aux);
-    printf("\n\n hay %d alumnos en ABB", aux);
-
+    //barridoPreOrdenABB(peekRaizABB(arbol_usado), &aux);
+    mostrarCostos(costoLSO, costoLIBT, costoABB);
+    resultado = aux/ exito;
+    printf("\n res: %d", resultado);
     scanf("%d", &aux);
     return 0;
 }
-

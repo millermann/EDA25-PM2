@@ -8,52 +8,44 @@
 
 #define max_LIBT_size 130
 
+costoEstructura costoLIBT;
+
 typedef struct
 {
-    alumno *lista;
+    alumno *lista[max_LIBT_size];
     int li;
-    int ls;
+    int cant;
 } LIBT;
 
 void initLIBT(LIBT *listaLI)
 {
-    listaLI->lista = (alumno *)malloc(sizeof(alumno) * max_LIBT_size);
-    listaLI->li = -1;
-    listaLI->ls = -1;
+    listaLI->li = 0;
+    listaLI->cant = 0;
 }
 
 int isFullLIBT(LIBT listaLI)
 {
-    return (listaLI.ls == (max_LIBT_size - 1));
+    return (listaLI.cant == max_LIBT_size);
 }
 
 int isEmptyLIBT(LIBT listaLI)
 {
-    return (listaLI.ls == -1);
-}
-
-void localizarLI(char id[], LIBT listaLI, int *pos, int *exito) // 1 = Exito, 0 = No encontrado
-{
-    int comparar = -1, cur = listaLI.li;
-
-    while ((cur <= listaLI.ls) && (comparar = strcmp(listaLI.lista[cur].codigo, id)) < 0)
-    {
-        cur++;
-    }
-    *pos = cur;
-    *exito = (comparar == 0);
+    return (listaLI.cant == 0);
 }
 
 void localizarTrisecc(char id[], LIBT listaLI, int *pos, int *exito) // 1 = Exito, 0 = No encontrado
 {
-    int li = listaLI.li, ls = listaLI.ls, mitad = 0, comparar = -1;
+    int li = listaLI.li, ls = listaLI.cant - 1, mitad = 0, comparar = -1;
     *exito = 0;
+
+    costoLIBT.consultasActuales = 0;
 
     while (li <= ls)
     {
         mitad = (li + ls) / 2;
 
-        comparar = strcmp(id, listaLI.lista[mitad].codigo);
+        comparar = strcmp(id, listaLI.lista[mitad]->codigo);
+        costoLIBT.consultasActuales++;
 
         if (comparar == 0)
         {
@@ -73,41 +65,43 @@ void localizarTrisecc(char id[], LIBT listaLI, int *pos, int *exito) // 1 = Exit
         *pos = li;
 }
 
-void altaLIBT(alumno x, LIBT *listaLI, int *exito)
+void altaLIBT(alumno x, LIBT *listaLI, int *exito) // -1 = No hay espacio. 0 = Ya existe en la estruc. 1 = Exito
 {
-    if (isEmptyLIBT(*listaLI))
-    {
-        listaLI->li = 0;
-        listaLI->ls = 0;
-        listaLI->lista[listaLI->li] = x;
-        *exito = 1;
-    }
+    alumno *alumnoNuevo = (alumno *)malloc(sizeof(alumno));
+
+    int pos;
+    localizarTrisecc(x.codigo, *listaLI, &pos, exito);
+
+    if (*exito)
+        *exito = 0;
 
     else
     {
-        int pos;
-        localizarTrisecc(x.codigo, *listaLI, &pos, exito);
-
-        if (*exito)
-            *exito = 0;
-
-        else
+        if (!isFullLIBT(*listaLI) && alumnoNuevo != NULL)
         {
-            if (!isFullLIBT(*listaLI))
+            float cambios = 0;
+
+            *alumnoNuevo = x;
+            int aux = (listaLI->cant) - 1;
+            while (aux >= pos)
             {
-                int aux = listaLI->ls;
-                while (aux >= pos)
-                {
-                    listaLI->lista[aux + 1] = listaLI->lista[aux];
-                    aux--;
-                }
-                listaLI->lista[pos] = x;
-                listaLI->ls++;
-                *exito = 1;
+                listaLI->lista[aux + 1] = listaLI->lista[aux];
+                aux--;
+                cambios += 0.5;
             }
-            else
-                *exito = -1;
+            listaLI->lista[pos] = alumnoNuevo;
+            cambios += 0.5;
+            listaLI->cant++;
+            *exito = 1;
+
+            // costes
+            if (cambios > costoLIBT.maxAlta)
+                costoLIBT.maxAlta = cambios;
+            costoLIBT.totalAltas += cambios;
+            costoLIBT.cantAltasExito++;
         }
+        else
+            *exito = -1;
     }
 }
 
@@ -117,18 +111,29 @@ void bajaLIBT(alumno x, LIBT *listaLI, int *exito) // -1 = No encontrado, 0 = La
     localizarTrisecc(x.codigo, *listaLI, &pos, exito);
     if (*exito == 1)
     {
-        if (mismoAlumno(x, listaLI->lista[pos]))
+        if (mismoAlumno(x, *listaLI->lista[pos]))
         {
+            float cambios = 0.5;
+
+            free(listaLI->lista[pos]);
             int aux = pos;
-            while (aux < listaLI->ls)
+            while (aux < (listaLI->cant) - 1)
             {
                 listaLI->lista[aux] = listaLI->lista[aux + 1];
                 aux++;
+                cambios += 0.5;
             }
-            listaLI->ls--;
+            listaLI->cant--;
             *exito = 1;
+
+            // costes
+            if (cambios > costoLIBT.maxBaja)
+                costoLIBT.maxBaja = cambios;
+            costoLIBT.totalBajas += cambios;
+            costoLIBT.cantBajasExito++;
         }
-        else *exito = 0;
+        else
+            *exito = 0;
     }
     else
         *exito = -1;
@@ -140,38 +145,58 @@ alumno *evocarLIBT(char codigo[], LIBT *listaLI, int *exito)
     localizarTrisecc(codigo, *listaLI, &pos, exito);
 
     if (*exito)
-        return &listaLI->lista[pos];
+    {
+        if (costoLIBT.consultasActuales > costoLIBT.maxEvocExito)
+            costoLIBT.maxEvocExito = costoLIBT.consultasActuales;
+
+        costoLIBT.totalEvocExito += costoLIBT.consultasActuales;
+        costoLIBT.cantEvocExito++;
+
+        return listaLI->lista[pos];
+    }
     else
+    {
+        if (costoLIBT.consultasActuales > costoLIBT.maxEvocFrac)
+            costoLIBT.maxEvocFrac = costoLIBT.consultasActuales;
+
+        costoLIBT.totalEvocFrac += costoLIBT.consultasActuales;
+        costoLIBT.cantEvocFrac++;
+
         return NULL;
+    }
 }
 
 void restablecerLIBT(LIBT *listaLI)
 {
-    free(listaLI->lista);
+    int pos = listaLI->li;
+    while (pos < listaLI->cant)
+    {
+        free(listaLI->lista[pos]);
+        pos++;
+    }
+
     initLIBT(listaLI);
 }
 
 void mostrarEstructuraLIBT(LIBT listaLI)
 {
     int cur = listaLI.li, aux = 0;
-    while (cur <= listaLI.ls)
+    while (cur < listaLI.cant)
     {
-        /*
         if (aux > 3)
         {
             printf("\n\n - Pulse para continuar...");
             fflush(stdin);
             getchar();
             system("cls");
-            printf("\n # # # #   M O S T R A R   A L U M N O S   # # # #\n");
+            printf("\n # # # #   M O S T R A R   A L U M N O S   ( L I B T )   # # # #\n");
             aux = 0;
         }
         aux++;
-        */
-        mostrarDatos(listaLI.lista[cur]);
+        
+        mostrarDatos(*(listaLI.lista[cur]));
         cur++;
     }
-    printf("\n\n hay %d alumnos en LIBT", cur);
     printf("\n\n # No hay mas alumnos para mostrar...");
 }
 

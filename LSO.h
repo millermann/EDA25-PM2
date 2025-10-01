@@ -4,14 +4,18 @@
 #include <string.h>
 #include <stdio.h>
 #include "alumno.h"
+#include "costo.h"
 
 #define max_LSO_size 130
+
+costoEstructura costoLSO;
 
 typedef struct // LSO con tamaño conocido
 {
     alumno vipd[max_LSO_size];
     int cur;
     int ultimoElem; // indice del ultimo elem guardado
+
 } LSO;
 
 void initLSO(LSO *lista)
@@ -59,14 +63,16 @@ void resetCur(LSO *lista)
     lista->cur = 0;
 }
 
-void localizar(char id[], LSO *lista, int *pos, int *exito) // 1 = Exito, 0 = No encontrado
+void localizarLSO(char id[], LSO *lista, int *pos, int *exito) // 1 = Exito, 0 = No encontrado
 {
     int comparar = -1;
+    costoLSO.consultasActuales = 1;
 
     lista->cur = 0;
     while (!isOos(*lista) && (comparar = strcmp(peek(*lista).codigo, id)) < 0)
     {
         lista->cur++; // deja el cur justo en la celda del 1er elem (>=) a x que encuentra
+        costoLSO.consultasActuales++;
     }
 
     if (comparar == 0)
@@ -79,7 +85,6 @@ void localizar(char id[], LSO *lista, int *pos, int *exito) // 1 = Exito, 0 = No
 
 void altaLSO(alumno x, LSO *lista, int *exito) // -1 = No espacio, 0 = Repetido, 1 = Exito
 {
-    int cambios = 0;
     int pos;
     if (isEmptyLSO(*lista))
     {
@@ -91,15 +96,18 @@ void altaLSO(alumno x, LSO *lista, int *exito) // -1 = No espacio, 0 = Repetido,
 
     else
     {
-        localizar(x.codigo, lista, &pos, exito);
+        localizarLSO(x.codigo, lista, &pos, exito);
         if (*exito == 1)
         {
             *exito = 0;
         }
+
         else
         {
             if (!isFull(*lista))
             {
+                int cambios = 0;
+
                 int aux = lista->ultimoElem;
                 while (aux >= pos)
                 {
@@ -110,6 +118,12 @@ void altaLSO(alumno x, LSO *lista, int *exito) // -1 = No espacio, 0 = Repetido,
                 lista->vipd[pos] = x;
                 lista->ultimoElem = (lista->ultimoElem) + 1;
                 *exito = 1;
+
+                // costes
+                if (cambios > costoLSO.maxAlta)
+                    costoLSO.maxAlta = cambios;
+                costoLSO.totalAltas += cambios;
+                costoLSO.cantAltasExito++;
             }
             else
             {
@@ -123,19 +137,27 @@ void bajaLSO(alumno x, LSO *lista, int *exito) // -1 = No encontrado, 0 = Nupla 
 {
     int pos;
 
-    localizar(x.codigo, lista, &pos, exito);
+    localizarLSO(x.codigo, lista, &pos, exito);
     if (*exito == 1)
     {
         if (mismoAlumno(x, lista->vipd[pos]))
         {
+            int cambios = 0;
             int aux = pos;
             while (aux < lista->ultimoElem)
             {
                 lista->vipd[aux] = lista->vipd[aux + 1];
                 aux++;
+                cambios++;
             }
             lista->ultimoElem = (lista->ultimoElem) - 1;
             *exito = 1;
+
+            // costes
+            if (cambios > costoLSO.maxBaja)
+                costoLSO.maxBaja = cambios;
+            costoLSO.totalBajas += cambios;
+            costoLSO.cantBajasExito++;
         }
         else
             *exito = 0;
@@ -149,7 +171,7 @@ int pertenece(char codigo[], LSO *lista)
     int exito = 0, pos;
     if (!isEmptyLSO(*lista))
     {
-        localizar(codigo, lista, &pos, &exito);
+        localizarLSO(codigo, lista, &pos, &exito);
     }
     return exito;
 }
@@ -158,7 +180,7 @@ void modificar(char codigo[], LSO *lista, int *exito) // -1 = No encontrado, 0 =
 {
     int pos;
 
-    localizar(codigo, lista, &pos, exito);
+    localizarLSO(codigo, lista, &pos, exito);
     if (*exito == 1)
     {
         int check_resp = 0, resp = 0;
@@ -242,38 +264,51 @@ void modificar(char codigo[], LSO *lista, int *exito) // -1 = No encontrado, 0 =
 alumno *evocarLSO(char codigo[], LSO *lista, int *exito)
 {
     int pos;
-    localizar(codigo, lista, &pos, exito);
+    localizarLSO(codigo, lista, &pos, exito);
 
     if (*exito == 1)
+    {
+        if (costoLSO.consultasActuales > costoLSO.maxEvocExito)
+            costoLSO.maxEvocExito = costoLSO.consultasActuales;
+
+        costoLSO.totalEvocExito += costoLSO.consultasActuales;
+        costoLSO.cantEvocExito++;
+
         return &lista->vipd[pos];
+    }
 
     else
+    {
+        if (costoLSO.consultasActuales > costoLSO.maxEvocFrac)
+            costoLSO.maxEvocFrac = costoLSO.consultasActuales;
+
+        costoLSO.totalEvocFrac += costoLSO.consultasActuales;
+        costoLSO.cantEvocFrac++;
+
         return NULL;
+    }
 }
 
 void mostrarEstructuraLSO(LSO lista)
 {
     int aux = 0;
-
     lista.cur = 0;
     while (isOos(lista) != 1)
     {
-        /*
         if (aux > 3)
         {
             printf("\n\n - Pulse para continuar...");
             fflush(stdin);
             getchar();
             system("cls");
-            printf("\n # # # #   M O S T R A R   A L U M N O S   # # # #\n");
+            printf("\n # # # #   M O S T R A R   A L U M N O S   ( L S O )   # # # #\n");
             aux = 0;
         }
         aux++;
-        */
+
         mostrarDatos(peek(lista));
         lista.cur++;
     }
-    printf("\n\n hay %d alumnos en LSO", lista.cur);
     printf("\n\n # No hay mas alumnos para mostrar...");
 }
 #endif // LSO_H_INCLUDED
