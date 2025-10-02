@@ -5,7 +5,7 @@ typedef struct
 {
     float totalAltas;
     float totalBajas;
-    float totalEvocExito; // sumatoria de todas las consult de cada evoc exit
+    float totalEvocExito;
     float totalEvocFrac;
     float maxAlta;
     float maxBaja;
